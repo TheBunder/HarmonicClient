@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="false">
+        <layer-list>
+            <item>
+                <shape android:shape="oval"
+                    android:width="10dp"  android:height="10dp" android:alpha="0.85">
+                    <solid android:color="@color/pressed_play_button_color" />
+                </shape>
+            </item>
+            <item
+                android:bottom="10dp"  android:left="15dp"  android:right="5dp"  android:top="10dp">  <bitmap
+                android:src="@drawable/play"  android:width="20dp"  android:height="20dp"/>
+            </item>
+        </layer-list>
+    </item>
+
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="oval"
+                    android:width="100dp"  android:height="100dp" android:alpha="0.85">
+                    <solid android:color="@color/unpressed_play_button_color" />
+                </shape>
+            </item>
+            <item
+                android:bottom="10dp"  android:left="10dp"  android:right="10dp"  android:top="10dp"><bitmap
+                android:src="@drawable/pause" android:width="20dp"  android:height="20dp"/>
+            </item>
+        </layer-list>
+    </item>
+</selector>

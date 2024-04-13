@@ -1,0 +1,34 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_selected="false">
+        <layer-list>
+            <item>
+                <shape android:shape="oval"
+                    android:width="10dp"  android:height="10dp" android:alpha="0.85">
+                    <solid android:color="@color/my_button_color" />
+                </shape>
+            </item>
+            <item
+                android:bottom="25dp"  android:left="45dp"  android:right="45dp"  android:top="25dp">  <bitmap
+                android:src="@drawable/blackmic"  android:width="20dp"  android:height="20dp"/>
+            </item>
+        </layer-list>
+    </item>
+
+    <item>
+        <layer-list>
+            <item>
+                <shape android:shape="oval"
+                    android:width="100dp"  android:height="100dp" android:alpha="0.85">
+                    <solid android:color="@color/pressed_record_button_color" />
+                </shape>
+            </item>
+            <item
+                android:bottom="25dp"  android:left="15dp"  android:right="15dp"  android:top="25dp"><bitmap
+                android:src="@drawable/whitemic" android:width="20dp"  android:height="20dp"/>
+            </item>
+        </layer-list>
+    </item>
+
+
+</selector>
