@@ -14,11 +14,9 @@ public class RecordingRunnable implements Runnable {
 
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
-    private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+    private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_8BIT;
     private static final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
-
     private static final String TAG = "LongRecord";
-
     private boolean recording = true;
     private AudioRecord microphone;
 
@@ -29,21 +27,19 @@ public class RecordingRunnable implements Runnable {
 
     public void recordAndSend() {
         try {
-            AudioTrack audioTrack = prepareRecord();
-            if (audioTrack == null) return;
+            prepareRecord();
 
 
             int sum = 0;
             int previous = 0;
             //Since audio format is 16 bit, we need to create a 16 bit (short data type) buffer
-            short[] buffer = new short[BUFFER_SIZE * 40];
+            byte[] buffer = new byte[BUFFER_SIZE * 40];
 
 
             while (recording) {
                 //reading audio from buffer
                 int readSize = microphone.read(buffer, 0, buffer.length);
-                //playing that audio simultaneously
-                audioTrack.write(buffer, 0, buffer.length);
+
 
                 sum += sendToServer(recording ? 0 : 1, readSize, buffer);
                 if (sum != previous) {
@@ -52,13 +48,11 @@ public class RecordingRunnable implements Runnable {
                 }
             }
         } catch (Exception e) {
-//            Toast.makeText(longRecord, "Recording failed", Toast.LENGTH_SHORT).show();
 
             Log.e(TAG, "error recording", e);  // Log the error for debugging
         } finally {
             microphone.stop();
             microphone.release();
-            //change from record to idol (stop record)
         }
 
     }
@@ -70,52 +64,21 @@ public class RecordingRunnable implements Runnable {
 
 
     @SuppressLint("MissingPermission")
-    @Nullable
-    public AudioTrack prepareRecord() {
-//        //int minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
-//        if (ContextCompat.checkSelfPermission(longRecord, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            return null;
-//        }
+    public void prepareRecord() {
+
         microphone = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE);
 
         microphone.startRecording();
 
-        //For playing audio
-//                        AudioTrack audioTrack = new AudioTrack.Builder()
-//                                .setAudioAttributes(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-//                                .setAudioFormat(AudioFormat.CHANNEL_OUT_MONO)
-//                                .setAudioFormat(AudioFormat.ENCODING_OPUS)
-//                                .setBufferSizeInBytes(bufferSize)
-//                                .build();
-        AudioTrack audioTrack = new AudioTrack(AudioAttributes.CONTENT_TYPE_UNKNOWN,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                BUFFER_SIZE,
-                AudioTrack.MODE_STREAM);
 
-        audioTrack.setPlaybackRate(SAMPLE_RATE);
-        audioTrack.play();
-        return audioTrack;
     }
 
-    public static int sendToServer(int state, int readSize, short[] buffer) {
+    public static int sendToServer(int state, int readSize, byte[] buffer) {
         byte[] msg = ("LongRecord" + "~" + MainActivity.getUsername() + "~" + state + "~" + readSize + "~").getBytes();
-        byte[] bufferAsBytes = new byte[readSize * 2];
-        for (int i = 0; i < readSize; ++i) {
-            bufferAsBytes[2 * i] = getByte1(buffer[i]);
-            bufferAsBytes[2 * i + 1] = getByte2(buffer[i]);
-        }
+
         byte[] toSend = new byte[msg.length + readSize * 2 + 1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
-        System.arraycopy(bufferAsBytes, 0, toSend, msg.length + 1, readSize * 2);
+        System.arraycopy(buffer, 0, toSend, msg.length + 1, readSize);
         toSend[0] = (byte) msg.length;
         SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
         String received = SendRecv.receive_data();
