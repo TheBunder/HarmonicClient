@@ -181,14 +181,7 @@ public class ShortRecord extends AppCompatActivity {
                     contents = new byte[size];
                     fis.read(contents, 0, size);
 
-                    byte[] msg = ("ShortRecord~"+MainActivity.getUsername()+"~"+(current == fileLength?1:0)+"~").getBytes();
-                    byte[] toSend = new byte[msg.length+contents.length+1];
-                    System.arraycopy(msg,0,toSend,1,msg.length);
-                    System.arraycopy(contents,0,toSend,msg.length+1,contents.length);
-                    toSend[0]= (byte) msg.length;
-                    SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
-                    SendRecv.receive_data();
-                    Log.v(TAG,"Sending file ... " + (current * 100) / fileLength + "% complete!");
+                    sendToServer("ShortRecord",current, fileLength, contents);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -209,6 +202,16 @@ public class ShortRecord extends AppCompatActivity {
         Spinner soundSelector = findViewById(R.id.sound_selector);
         soundSelector.setAdapter(spinnerAdapter);
 
+    }
+
+    private static void sendToServer(String code,long current, long fileLength, byte[] contents) {
+        byte[] msg = (code+"~"+MainActivity.getUsername()+"~"+(current == fileLength ?1:0)+"~").getBytes();
+        byte[] toSend = new byte[msg.length+ contents.length+1];
+        System.arraycopy(msg,0,toSend,1,msg.length);
+        System.arraycopy(contents,0,toSend,msg.length+1, contents.length);
+        toSend[0]= (byte) msg.length;
+        SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
+        SendRecv.receive_data();
     }
 
     private void showSaveDialog() {
