@@ -68,7 +68,7 @@ public class ShortRecord extends AppCompatActivity {
                         if (checkPermissions()) {
                             recording = true;
                             Log.v(TAG, "Have permission");
-                            btnRecord.setSelected(!btnRecord.isSelected());
+                            changeButtonState();
                             File internalStorageDir = getFilesDir(); // Get internal storage directory
                             audioSaveFile = new File(internalStorageDir, "recordingAudio.ogg");
                             mediaRecorder = new MediaRecorder();
@@ -88,7 +88,7 @@ public class ShortRecord extends AppCompatActivity {
                             } catch (IOException e) {
                                 Toast.makeText(this, "Recording failed", Toast.LENGTH_SHORT).show();
                                 Log.e(TAG, "error recording", e);  // Log the error for debugging
-                                btnRecord.setSelected(!btnRecord.isSelected());
+                                changeButtonState();
                             }
 
                         } else {
@@ -100,7 +100,7 @@ public class ShortRecord extends AppCompatActivity {
 
                     } else {
                         recording = false;
-                        btnRecord.setSelected(!btnRecord.isSelected());
+                        changeButtonState();
                         mediaRecorder.stop();
                         mediaRecorder.reset();
                         mediaRecorder.release();
@@ -202,6 +202,9 @@ public class ShortRecord extends AppCompatActivity {
         Spinner soundSelector = findViewById(R.id.sound_selector);
         soundSelector.setAdapter(spinnerAdapter);
 
+    }
+    public void changeButtonState(){
+        btnRecord.setSelected(!btnRecord.isSelected());
     }
 
     private static void sendToServer(String code,long current, long fileLength, byte[] contents) {
