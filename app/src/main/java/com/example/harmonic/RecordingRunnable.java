@@ -32,8 +32,8 @@ public class RecordingRunnable implements Runnable {
 
             int sum = 0;
             int previous = 0;
-            //Since audio format is 16 bit, we need to create a 16 bit (short data type) buffer
-            byte[] buffer = new byte[BUFFER_SIZE * 40];
+            //Since audio format is 8 bit, we need to create a 8 bit (byte data type) buffer
+            byte[] buffer = new byte[BUFFER_SIZE * 100];
 
 
             while (recording) {
@@ -76,7 +76,7 @@ public class RecordingRunnable implements Runnable {
     public static int sendToServer(int state, int readSize, byte[] buffer) {
         byte[] msg = ("LongRecord" + "~" + MainActivity.getUsername() + "~" + state + "~" + readSize + "~").getBytes();
 
-        byte[] toSend = new byte[msg.length + readSize * 2 + 1];
+        byte[] toSend = new byte[msg.length + readSize + 1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
         System.arraycopy(buffer, 0, toSend, msg.length + 1, readSize);
         toSend[0] = (byte) msg.length;
