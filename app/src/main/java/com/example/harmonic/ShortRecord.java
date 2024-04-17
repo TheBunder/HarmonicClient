@@ -13,7 +13,6 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,11 +26,8 @@ import android.content.DialogInterface;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -214,7 +210,7 @@ public class ShortRecord extends AppCompatActivity {
         System.arraycopy(contents,0,toSend,msg.length+1, contents.length);
         toSend[0]= (byte) msg.length;
         SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
-        SendRecv.receive_data();
+        SendRecv.receiveData();
     }
 
     private void showSaveDialog() {
@@ -225,37 +221,28 @@ public class ShortRecord extends AppCompatActivity {
         builder.setTitle("Save Recording");
         builder.setView(input);
 
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String name = input.getText().toString().trim(); // Trim leading and trailing spaces
-                if (!name.isEmpty()) {
-                    // Save recording logic (consider using AudioSavePath)
-                    if (!savedRecordingNames.contains(name)) {
-                        try {
-                            savedRecordingNames.add(name); // Add name to the list
-                            spinnerAdapter.notifyDataSetChanged(); // Update the spinner data
-                            Toast.makeText(ShortRecord.this, "Recording saved as " + name, Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error saving recording or updating spinner", e);
-                            Toast.makeText(ShortRecord.this, "An error occurred while saving. Please try again.", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(ShortRecord.this, "This name is already in use. Please choose a different name.", Toast.LENGTH_SHORT).show();
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String name = input.getText().toString().trim(); // Trim leading and trailing spaces
+            if (!name.isEmpty()) {
+                // Save recording logic (consider using AudioSavePath)
+                if (!savedRecordingNames.contains(name)) {
+                    try {
+                        savedRecordingNames.add(name); // Add name to the list
+                        spinnerAdapter.notifyDataSetChanged(); // Update the spinner data
+                        Toast.makeText(ShortRecord.this, "Recording saved as " + name, Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error saving recording or updating spinner", e);
+                        Toast.makeText(ShortRecord.this, "An error occurred while saving. Please try again.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(ShortRecord.this, "Please enter a name", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ShortRecord.this, "This name is already in use. Please choose a different name.", Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                Toast.makeText(ShortRecord.this, "Please enter a name", Toast.LENGTH_SHORT).show();
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 

@@ -1,14 +1,10 @@
 package com.example.harmonic;
 
 import android.annotation.SuppressLint;
-import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.util.Log;
-
-import androidx.annotation.Nullable;
 
 public class RecordingRunnable implements Runnable {
 
@@ -39,22 +35,19 @@ public class RecordingRunnable implements Runnable {
             while (recording) {
                 //reading audio from buffer
                 int readSize = microphone.read(buffer, 0, buffer.length);
-
-
-                sum += sendToServer(recording ? 0 : 1, readSize, buffer);
+                // Send to server the recording and sum the total occurrences
+                sum += sendToServer(readSize, buffer);
                 if (sum != previous) {
                     Log.v(TAG, "Number of occurrences: " + sum);
                     previous = sum;
                 }
             }
         } catch (Exception e) {
-
             Log.e(TAG, "error recording", e);  // Log the error for debugging
         } finally {
             microphone.stop();
             microphone.release();
         }
-
     }
 
     public void stop() {
@@ -73,27 +66,19 @@ public class RecordingRunnable implements Runnable {
 
     }
 
-    public static int sendToServer(int state, int readSize, byte[] buffer) {
-        byte[] msg = ("LongRecord" + "~" + MainActivity.getUsername() + "~" + state + "~" + readSize + "~").getBytes();
+    public static int sendToServer(int readSize, byte[] buffer) {
+        byte[] msg = ("LongRecord" + "~" + MainActivity.getUsername() + "~").getBytes();
 
         byte[] toSend = new byte[msg.length + readSize + 1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
         System.arraycopy(buffer, 0, toSend, msg.length + 1, readSize);
         toSend[0] = (byte) msg.length;
         SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
-        String received = SendRecv.receive_data();
+        String received = SendRecv.receiveData();
         if (received.contains("Number")) {
             return Integer.parseInt(received.split(" ")[3]);
         }
         return 0;
-    }
-
-    public static byte getByte1(short s) {
-        return (byte) s;
-    }
-
-    public static byte getByte2(short s) {
-        return (byte) (s >> 8);
     }
 
 
