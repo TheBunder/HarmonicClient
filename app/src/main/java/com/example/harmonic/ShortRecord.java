@@ -21,14 +21,16 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
 
 
 public class ShortRecord extends AppCompatActivity {
@@ -54,6 +56,19 @@ public class ShortRecord extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_short_record);
 
+        // Initialize saved recording names list
+        savedRecordingNames = new ArrayList<>();
+        savedRecordingNames.add("default");
+        String[] sounds = getSounds().split("~");
+        Collections.addAll(savedRecordingNames, sounds);
+
+        // Create the ArrayAdapter with an empty list initially
+        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, savedRecordingNames);
+
+        // Set the adapter for the spinner
+        Spinner soundSelector = findViewById(R.id.sound_selector);
+        soundSelector.setAdapter(spinnerAdapter);
+
         btnRecord = findViewById(R.id.buttonRecord);
         btnRecord.setOnClickListener(v -> {
             try {
@@ -65,6 +80,7 @@ public class ShortRecord extends AppCompatActivity {
                             recording = true;
                             Log.v(TAG, "Have permission");
                             changeButtonState();
+                            soundSelector.setSelection(0);
                             File internalStorageDir = getFilesDir(); // Get internal storage directory
                             audioSaveFile = new File(internalStorageDir, "recordingAudio.ogg");
                             mediaRecorder = new MediaRecorder();
@@ -161,59 +177,72 @@ public class ShortRecord extends AppCompatActivity {
 
         btnNext = findViewById(R.id.buttonRight);
         btnNext.setOnClickListener(v -> {
+            if (Objects.equals((String) soundSelector.getSelectedItem(), "default")) {
+                try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(audioSaveFile))) {
+                    long current = 0;
+                    long fileLength = audioSaveFile.length();
+                    byte[] contents;
+                    while (current != fileLength) {
+                        int size = 10000;
+                        if (fileLength - current >= size)
+                            current += size;
+                        else {
+                            size = (int) (fileLength - current);
+                            current = fileLength;
+                        }
+                        contents = new byte[size];
+                        fis.read(contents, 0, size);
 
-            try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(audioSaveFile))) {
-                long current = 0;
-                long fileLength = audioSaveFile.length();
-                byte[] contents;
-                while (current != fileLength) {
-                    int size = 10000;
-                    if (fileLength - current >= size)
-                        current += size;
-                    else {
-                        size = (int) (fileLength - current);
-                        current = fileLength;
+                        sendToServerSound("ShortRecord", current, fileLength, contents);
                     }
-                    contents = new byte[size];
-                    fis.read(contents, 0, size);
-
-                    sendToServer("ShortRecord",current, fileLength, contents);
+                } catch (IOException e) {
+                    Toast.makeText(this, "an error occurred when trying to send the sound", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error: ", e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } else {
+                sendToServerSelection((String) soundSelector.getSelectedItem());
             }
             startActivity(new Intent(ShortRecord.this, LongRecord.class));
         });
         btnSave = findViewById(R.id.buttonSave);
 
-        btnSave.setOnClickListener(v -> showSaveDialog());
-
-        // Initialize saved recording names list
-        savedRecordingNames = new ArrayList<>();
-
-        // Create the ArrayAdapter with an empty list initially
-        spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, savedRecordingNames);
-
-        // Set the adapter for the spinner
-        Spinner soundSelector = findViewById(R.id.sound_selector);
-        soundSelector.setAdapter(spinnerAdapter);
+        btnSave.setOnClickListener(v -> saveSound(audioSaveFile));
 
     }
-    public void changeButtonState(){
+
+    public void changeButtonState() {
         btnRecord.setSelected(!btnRecord.isSelected());
     }
 
-    private static void sendToServer(String code,long current, long fileLength, byte[] contents) {
-        byte[] msg = (code+"~"+MainActivity.getUsername()+"~"+(current == fileLength ?1:0)+"~").getBytes();
-        byte[] toSend = new byte[msg.length+ contents.length+1];
-        System.arraycopy(msg,0,toSend,1,msg.length);
-        System.arraycopy(contents,0,toSend,msg.length+1, contents.length);
-        toSend[0]= (byte) msg.length;
+    private static void sendToServerSound(String code, long current, long fileLength, byte[] contents) {
+        byte[] msg = (code + "~" + MainActivity.getUsername() + "~" + (current == fileLength ? 1 : 0) + "~").getBytes();
+        byte[] toSend = new byte[msg.length + contents.length + 1];
+        System.arraycopy(msg, 0, toSend, 1, msg.length);
+        System.arraycopy(contents, 0, toSend, msg.length + 1, contents.length);
+        toSend[0] = (byte) msg.length;
         SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
         SendRecv.receiveData();
     }
 
-    private void showSaveDialog() {
+    private static void sendToServerSelection(String soundName) {
+        byte[] msg = ("ShortRecordExist" + "~" + MainActivity.getUsername() + "~" + soundName + "~").getBytes();
+        byte[] toSend = new byte[msg.length + +1];
+        System.arraycopy(msg, 0, toSend, 1, msg.length);
+        toSend[0] = (byte) msg.length;
+        SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
+        SendRecv.receiveData();
+    }
+
+    private static String getSounds() {
+        byte[] msg = ("GetSoundsNames" + "~" + MainActivity.getUsername() + "~").getBytes();
+        byte[] toSend = new byte[msg.length + 1];
+        System.arraycopy(msg, 0, toSend, 1, msg.length);
+        toSend[0] = (byte) msg.length;
+        SendRecv.send(MainActivity.getmHandler(), MainActivity.getIp(), toSend);
+        return SendRecv.receiveData();
+    }
+
+    private void saveSound(File audioSaveFile) {
         final EditText input = new EditText(this);
         input.setHint("Enter a name"); // Set the hint for the EditText
 
@@ -224,18 +253,44 @@ public class ShortRecord extends AppCompatActivity {
         builder.setPositiveButton("Save", (dialog, which) -> {
             String name = input.getText().toString().trim(); // Trim leading and trailing spaces
             if (!name.isEmpty()) {
-                // Save recording logic (consider using AudioSavePath)
-                if (!savedRecordingNames.contains(name)) {
-                    try {
-                        savedRecordingNames.add(name); // Add name to the list
-                        spinnerAdapter.notifyDataSetChanged(); // Update the spinner data
-                        Toast.makeText(ShortRecord.this, "Recording saved as " + name, Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error saving recording or updating spinner", e);
-                        Toast.makeText(ShortRecord.this, "An error occurred while saving. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                Scanner scanner = new Scanner(name);
+                String validationResult = scanner.findInLine("[^0-9a-zA-Z]+");
+                if (validationResult != null) {
+                    // Invalid character found.
+                    Toast.makeText(this, "FIle name can only contain numbers and letters", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(ShortRecord.this, "This name is already in use. Please choose a different name.", Toast.LENGTH_SHORT).show();
+                    // Save recording logic (consider using AudioSavePath)
+                    if (!savedRecordingNames.contains(name)) {
+                        try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(audioSaveFile))) {
+                            //Send to server
+                            long current = 0;
+                            long fileLength = audioSaveFile.length();
+                            byte[] contents;
+                            while (current != fileLength) {
+                                int size = 10000;
+                                if (fileLength - current >= size)
+                                    current += size;
+                                else {
+                                    size = (int) (fileLength - current);
+                                    current = fileLength;
+                                }
+                                contents = new byte[size];
+                                fis.read(contents, 0, size);
+
+                                sendToServerSound("SaveRecord" + "~" + name, current, fileLength, contents);
+                            }
+
+                            // save name in client
+                            savedRecordingNames.add(name); // Add name to the list
+                            spinnerAdapter.notifyDataSetChanged(); // Update the spinner data
+                            Toast.makeText(ShortRecord.this, "Recording saved as " + name, Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error saving recording or updating spinner", e);
+                            Toast.makeText(ShortRecord.this, "An error occurred while saving. Please try again.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(ShortRecord.this, "This name is already in use. Please choose a different name.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             } else {
                 Toast.makeText(ShortRecord.this, "Please enter a name", Toast.LENGTH_SHORT).show();

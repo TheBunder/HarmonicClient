@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Scanner;
+
 public class CreateAccount extends AppCompatActivity {
     EditText username, password, repassword;
     Button btnBack, btnCreate;
@@ -51,33 +53,41 @@ public class CreateAccount extends AppCompatActivity {
             if (user.equals("") || pass.equals("") || repass.equals("")) {
                 Toast.makeText(CreateAccount.this, "Please enter all the fields", Toast.LENGTH_SHORT).show();
             } else {
-                if (pass.equals(repass)) {
-                    if (pass.length() >= MINIMUM_PASSWORD_LENGTH) { // Check password length
-                        SendRecv.setEncryption(MainActivity.getmHandler());
-                        try {
-                            SendRecv.send_encrypted(to_send);
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error: ", e);
-                        }
-                        String answer = SendRecv.receiveData();
-                        if (!answer.equals("Username is in use")) {
-                            if (answer.equals("Sign up successful")) {
-                                Toast.makeText(CreateAccount.this, "Registered successfully", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(CreateAccount.this, MainActivity.class));
+                Scanner scanner = new Scanner(user);
+                String validationResult = scanner.findInLine("[^0-9a-zA-Z]+");
+                if (validationResult != null) {
+                    // Invalid character found.
+                    Toast.makeText(this, "Username can only contain numbers and letters", Toast.LENGTH_SHORT).show();
+                }
+                else {
+
+                    if (pass.equals(repass)) {
+                        if (pass.length() >= MINIMUM_PASSWORD_LENGTH) { // Check password length
+                            SendRecv.setEncryption(MainActivity.getmHandler());
+                            try {
+                                SendRecv.send_encrypted(to_send);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error: ", e);
+                            }
+                            String answer = SendRecv.receiveData();
+                            if (!answer.equals("Username is in use")) {
+                                if (answer.equals("Sign up successful")) {
+                                    Toast.makeText(this, "Registered successfully", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(CreateAccount.this, MainActivity.class));
+                                } else {
+                                    Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
+                                }
                             } else {
-                                Toast.makeText(CreateAccount.this, "Registration failed", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "User already exists! Please sign in", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(CreateAccount.this, "User already exists! Please sign in", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Password must be at least " + MINIMUM_PASSWORD_LENGTH + " characters long", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Toast.makeText(CreateAccount.this, "Password must be at least " + MINIMUM_PASSWORD_LENGTH + " characters long", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CreateAccount.this, "Password not matching", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(CreateAccount.this, "Password not matching", Toast.LENGTH_SHORT).show();
                 }
             }
-
         });
     }
 }
