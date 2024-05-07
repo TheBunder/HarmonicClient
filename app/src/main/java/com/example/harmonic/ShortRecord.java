@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +36,10 @@ import java.util.Scanner;
 
 public class ShortRecord extends AppCompatActivity {
 
-    ImageButton btnRecord, btnPlay;
-    Button btnNext, btnSave;
+    ImageButton btnRecord;
+    ImageButton btnPlay;
+    Button btnNext;
+    Button btnSave;
     MediaRecorder mediaRecorder;
     MediaPlayer mediaPlayer;
     File audioSaveFile;
@@ -72,11 +75,11 @@ public class ShortRecord extends AppCompatActivity {
         btnRecord = findViewById(R.id.buttonRecord);
         btnRecord.setOnClickListener(v -> {
             try {
-                if (!playing) {
+                if (!playing) {// check if the app plays a recording
 
-                    if (!btnRecord.isSelected()) {
+                    if (!btnRecord.isSelected()) {// check whether to stop or to start
 
-                        if (checkPermissions()) {
+                        if (checkPermissions()) {// check if there are needed premision
                             recording = true;
                             Log.v(TAG, "Have permission");
                             changeButtonState();
@@ -88,9 +91,9 @@ public class ShortRecord extends AppCompatActivity {
                             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.OGG);
                             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.OPUS);
                             mediaRecorder.setOutputFile(audioSaveFile);
-                            mediaRecorder.setOnErrorListener((mr, what, extra) -> {
-                                Log.e(TAG, "MediaRecorder error: what=" + what + ", extra=" + extra);
-                            });
+                            mediaRecorder.setOnErrorListener((mr, what, extra) ->
+                                Log.e(TAG, "MediaRecorder error: what=" + what + ", extra=" + extra)
+                            );
 
                             try {
                                 mediaRecorder.prepare();
@@ -103,7 +106,7 @@ public class ShortRecord extends AppCompatActivity {
                                 changeButtonState();
                             }
 
-                        } else {
+                        } else {// ask for premision
                             Log.v(TAG, "missing permission");
                             ActivityCompat.requestPermissions(ShortRecord.this,
                                     new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_MEDIA_AUDIO}, 1);
@@ -128,11 +131,11 @@ public class ShortRecord extends AppCompatActivity {
 
         btnPlay = findViewById(R.id.buttonPlay);
         btnPlay.setOnClickListener(v -> {
-            if (!recording) {
+            if (!recording) {// check if the app record
 
-                if (!btnPlay.isSelected()) {
+                if (!btnPlay.isSelected()) {// whether to start or to stop the recording
 
-                    if (audioSaveFile != null) {
+                    if (audioSaveFile != null) {// check if the user recorded something
                         mediaPlayer = new MediaPlayer();
                         try {
                             btnPlay.setSelected(!btnPlay.isSelected());
@@ -176,9 +179,9 @@ public class ShortRecord extends AppCompatActivity {
 
 
         btnNext = findViewById(R.id.buttonRight);
-        btnNext.setOnClickListener(v -> {
-            if (Objects.equals((String) soundSelector.getSelectedItem(), "default")) {
-                try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(audioSaveFile))) {
+        btnNext.setOnClickListener(v -> {// send the selection (by name or by file) and move to the next screen
+            if (Objects.equals(soundSelector.getSelectedItem(), "default")) {
+                try (BufferedInputStream fis = new BufferedInputStream(Files.newInputStream(audioSaveFile.toPath()))) {
                     long current = 0;
                     long fileLength = audioSaveFile.length();
                     byte[] contents;
@@ -214,7 +217,7 @@ public class ShortRecord extends AppCompatActivity {
         btnRecord.setSelected(!btnRecord.isSelected());
     }
 
-    private static void sendToServerSound(String code, long current, long fileLength, byte[] contents) {
+    private static void sendToServerSound(String code, long current, long fileLength, byte[] contents) {// send to server the sound
         byte[] msg = (code + "~" + MainActivity.getUsername() + "~" + (current == fileLength ? 1 : 0) + "~").getBytes();
         byte[] toSend = new byte[msg.length + contents.length + 1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
@@ -224,7 +227,7 @@ public class ShortRecord extends AppCompatActivity {
         SendRecv.receiveData();
     }
 
-    private static void sendToServerSelection(String soundName) {
+    private static void sendToServerSelection(String soundName) { //send to the server the sound name the user chose to set as the short sound
         byte[] msg = ("ShortRecordExist" + "~" + MainActivity.getUsername() + "~" + soundName + "~").getBytes();
         byte[] toSend = new byte[msg.length + +1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
@@ -233,7 +236,7 @@ public class ShortRecord extends AppCompatActivity {
         SendRecv.receiveData();
     }
 
-    private static String getSounds() {
+    private static String getSounds() {// returns all the use's sound and input into the spinner
         byte[] msg = ("GetSoundsNames" + "~" + MainActivity.getUsername() + "~").getBytes();
         byte[] toSend = new byte[msg.length + 1];
         System.arraycopy(msg, 0, toSend, 1, msg.length);
@@ -259,7 +262,7 @@ public class ShortRecord extends AppCompatActivity {
                     // Invalid character found.
                     Toast.makeText(this, "FIle name can only contain numbers and letters", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Save recording logic (consider using AudioSavePath)
+                    // Save recording logic
                     if (!savedRecordingNames.contains(name)) {
                         try (BufferedInputStream fis = new BufferedInputStream(new FileInputStream(audioSaveFile))) {
                             //Send to server

@@ -124,7 +124,6 @@ public class SendRecv {
                 Log.d("DPH", String.valueOf(SharedKey));
 
                 // Hash the random value with SHA-256 and take the first 16 bytes of the digest
-                //byte[] secretKey = Arrays.copyOfRange(MessageDigest.getInstance("SHA-256").digest((SharedKey.toByteArray())), 0, 16);
                 MessageDigest md = MessageDigest.getInstance("SHA256");
                 byte[] hashKey = md.digest((SharedKey.toString()).getBytes());
                 byte[] secretKey = Arrays.copyOf(hashKey, 16);
@@ -144,12 +143,6 @@ public class SendRecv {
                 Cipher cipherDecryption = Cipher.getInstance("AES/CBC/PKCS5Padding");
                 cipherDecryption.init(Cipher.DECRYPT_MODE, aesKey, ivParams);
 
-                //byte[] result = new byte[encryptedPassword.length + iv.length];
-                //System.arraycopy(encryptedPassword, 0, result, 0, encryptedPassword.length);
-
-                //IvParameterSpec ivParams1 = new IvParameterSpec(cipherEncryption.getIV());
-
-                //send(encryptedPassword);
                 SendRecv.setAes_key(aesKey);
                 SendRecv.setIv(ivParams);
 
@@ -167,7 +160,7 @@ public class SendRecv {
         ba = encryption_cipher.doFinal(padToMultipleOf16(ba));
         ba = Base64.getEncoder().encode(ba);
         Log.d("send_encrypted", new String(ba));
-        Thread sender = new Thread(new TcpSendRecv(MHandler, SessionData.getServerIp(), ba));
+        Thread sender = new Thread(new TcpSendRecv(MHandler, MainActivity.getIp(), ba));
         sender.start();
         try {
             // Wait for the sender thread to finish

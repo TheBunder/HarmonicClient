@@ -43,8 +43,6 @@ public class TcpSendRecv implements Runnable {
                 SocketHandler.setSocket(sk);
 
                 Log.d(TAG, "connected");
-                //Thread listener = new Thread(new Listener(sk));
-                //listener.start();
 
             } catch (UnknownHostException e) {
                 Log.e(TAG, "ERROR UnknownHostException socket");
@@ -56,7 +54,7 @@ public class TcpSendRecv implements Runnable {
             }
         }
 
-
+// Create the header string with the length of the data and a separato
         String s = String.format(Locale.US, "%09d", bdata.length) + "|";
 
         byte[] header = s.getBytes();
@@ -64,7 +62,6 @@ public class TcpSendRecv implements Runnable {
         try {
             assert sk != null;
             DataOutputStream dout = new DataOutputStream(sk.getOutputStream());
-//            PrintWriter pw = new PrintWriter(sk.getOutputStream());
             Log.d(TAG, "Before Send 2");
             byte[] c = new byte[header.length + bdata.length];
             System.arraycopy(header, 0, c, 0, header.length);
@@ -142,9 +139,7 @@ public class TcpSendRecv implements Runnable {
 
                     String dataStr = new String(data, "UTF-8");
                     Log.d(TAG, " ** got data :" + dataStr);
-                    //HandleData.HandleMSG(dataStr);
                     // Set the received data variable
-                    //receivedData = dataStr;
                     setData(dataStr);
                     Handler mHandler = SocketHandler.getHreceiver();
                     if (mHandler == null) {

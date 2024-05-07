@@ -14,7 +14,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     EditText username, password;
-    Button btnLogin, btnSignup, btnSend;
+    Button btnLogin, btnSignup;
     DBHelper DB;
     static String user;
     private static Handler mHandler;

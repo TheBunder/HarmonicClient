@@ -1,13 +1,12 @@
 package com.example.harmonic;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +19,8 @@ public class LongRecord extends AppCompatActivity {
 
     private ImageButton btnRecord;
 
+    TextView occurrences;
+
 
     private static final String TAG = "LongRecord";
 
@@ -29,22 +30,23 @@ public class LongRecord extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_long_record);
 
+        occurrences = findViewById(R.id.Occurrences);
+
         btnRecord = findViewById(R.id.buttonRecord);
-        RecordingRunnable recordingRunnable = new RecordingRunnable();
+        RecordingRunnable recordingRunnable = new RecordingRunnable(occurrences);
         btnRecord.setOnClickListener(v -> {
             try {
-                if (!btnRecord.isSelected()) {
+                if (!btnRecord.isSelected()) {// check whether to stop or to start
 
-                    if (checkPermissions()) {
+                    if (checkPermissions()) {// check if there are needed premision
                         Log.v(TAG, "Have permission");
-                        //change from idol to record {start record}
+                        //change from idol to record (start record)
                         switchOn();
-
+                        // start recording
                         Toast.makeText(this, "Recording started", Toast.LENGTH_SHORT).show();
-//                        runOnUiThread(recordingRunnable);
                         Thread recordingThread = new Thread(recordingRunnable, "Recording Thread");
                         recordingThread.start();
-                        Log.v(TAG, "heyy!!! did you get here?!");
+                        //Log.v(TAG, "heyy!!! did you get here?!");
 
                     } else {
                         Log.v(TAG, "missing permission");
@@ -52,7 +54,7 @@ public class LongRecord extends AppCompatActivity {
                                 new String[]{android.Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_MEDIA_AUDIO}, 1);
                     }
 
-                } else {
+                } else {// ask for premision
                     recordingRunnable.stop();
                     switchOff();
                     Toast.makeText(this, "Recording stopped", Toast.LENGTH_SHORT).show();
@@ -63,18 +65,15 @@ public class LongRecord extends AppCompatActivity {
             }
         });
 
-
-        Button btnNext = findViewById(R.id.buttonRight);
-        btnNext.setOnClickListener(v -> startActivity(new Intent(LongRecord.this, Counter.class)));
     }
 
     public void switchOn() {
         btnRecord.setSelected(true);
-    }
+    } // change button mode
 
     public void switchOff() {
         btnRecord.setSelected(false);
-    }
+    } // change button mode
 
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)

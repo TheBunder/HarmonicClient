@@ -5,6 +5,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
+import android.widget.TextView;
 
 public class RecordingRunnable implements Runnable {
 
@@ -16,21 +17,26 @@ public class RecordingRunnable implements Runnable {
     private boolean recording = true;
     private AudioRecord microphone;
 
+    TextView occurrences;
+
+    public RecordingRunnable(TextView occurrences) {
+        this.occurrences = occurrences;
+    }
+
     @Override
     public void run() {
         recordAndSend();
     }
 
+
     public void recordAndSend() {
         try {
             prepareRecord();
-
 
             int sum = 0;
             int previous = 0;
             //Since audio format is 8 bit, we need to create a 8 bit (byte data type) buffer
             byte[] buffer = new byte[BUFFER_SIZE * 100];
-
 
             while (recording) {
                 //reading audio from buffer
@@ -38,10 +44,14 @@ public class RecordingRunnable implements Runnable {
                 // Send to server the recording and sum the total occurrences
                 sum += sendToServer(readSize, buffer);
                 if (sum != previous) {
-                    Log.v(TAG, "Number of occurrences: " + sum);
                     previous = sum;
+                    String messageToScreen = "Number of occurrences: " + sum;
+                    Log.v(TAG, messageToScreen);
+                    occurrences.setText(messageToScreen);
                 }
             }
+
+
         } catch (Exception e) {
             Log.e(TAG, "error recording", e);  // Log the error for debugging
         } finally {
@@ -58,15 +68,11 @@ public class RecordingRunnable implements Runnable {
 
     @SuppressLint("MissingPermission")
     public void prepareRecord() {
-
         microphone = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE);
-
         microphone.startRecording();
-
-
     }
 
-    public static int sendToServer(int readSize, byte[] buffer) {
+    public static int sendToServer(int readSize, byte[] buffer) { // send to server sound chunk
         byte[] msg = ("LongRecord" + "~" + MainActivity.getUsername() + "~").getBytes();
 
         byte[] toSend = new byte[msg.length + readSize + 1];
