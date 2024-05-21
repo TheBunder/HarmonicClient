@@ -14,7 +14,7 @@ public class RecordingRunnable implements Runnable {
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_8BIT;
     private static final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
     private static final String TAG = "LongRecord";
-    private boolean recording = true;
+    private boolean recording;
     private AudioRecord microphone;
 
     TextView occurrences;
@@ -37,17 +37,23 @@ public class RecordingRunnable implements Runnable {
             int previous = 0;
             //Since audio format is 8 bit, we need to create a 8 bit (byte data type) buffer
             byte[] buffer = new byte[BUFFER_SIZE * 100];
-
-            while (recording) {
+            recording=true;
+            while (recording && !Thread.interrupted()) {
                 //reading audio from buffer
                 int readSize = microphone.read(buffer, 0, buffer.length);
                 // Send to server the recording and sum the total occurrences
                 sum += sendToServer(readSize, buffer);
                 if (sum != previous) {
                     previous = sum;
-                    String messageToScreen = "Number of occurrences: " + sum;
-                    Log.v(TAG, messageToScreen);
-                    occurrences.setText(messageToScreen);
+                    if(sum<1000){
+                        String messageToScreen = "Number of occurrences: " + sum;
+                        Log.v(TAG, messageToScreen);
+                        occurrences.setText(messageToScreen);
+                    }
+                    else{
+                        String messageToScreen = "Number of occurrences: +999";
+                        occurrences.setText(messageToScreen);
+                    }
                 }
             }
 

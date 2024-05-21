@@ -28,10 +28,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 
 public class ShortRecord extends AppCompatActivity {
@@ -63,7 +65,7 @@ public class ShortRecord extends AppCompatActivity {
         savedRecordingNames = new ArrayList<>();
         savedRecordingNames.add("default");
         String[] sounds = getSounds().split("~");
-        Collections.addAll(savedRecordingNames, sounds);
+        savedRecordingNames.addAll(Arrays.stream(sounds).filter(sound -> !sound.isEmpty()).collect(Collectors.toList()));
 
         // Create the ArrayAdapter with an empty list initially
         spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, savedRecordingNames);
@@ -196,7 +198,7 @@ public class ShortRecord extends AppCompatActivity {
                         contents = new byte[size];
                         fis.read(contents, 0, size);
 
-                        sendToServerSound("ShortRecord", current, fileLength, contents);
+                        sendToServerSound("ShortRecordSave", current, fileLength, contents);
                     }
                 } catch (IOException e) {
                     Toast.makeText(this, "an error occurred when trying to send the sound", Toast.LENGTH_SHORT).show();

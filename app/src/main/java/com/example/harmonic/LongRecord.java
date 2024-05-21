@@ -54,7 +54,7 @@ public class LongRecord extends AppCompatActivity {
                                 new String[]{android.Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_MEDIA_AUDIO}, 1);
                     }
 
-                } else {// ask for premision
+                } else {// stop recording
                     recordingRunnable.stop();
                     switchOff();
                     Toast.makeText(this, "Recording stopped", Toast.LENGTH_SHORT).show();
