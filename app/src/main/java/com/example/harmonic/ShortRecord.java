@@ -92,9 +92,13 @@ public class ShortRecord extends AppCompatActivity {
                             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
                             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.OGG);
                             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.OPUS);
+//                            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+//                            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+                            mediaRecorder.setAudioSamplingRate(48000);
+                            mediaRecorder.setAudioChannels(1);
                             mediaRecorder.setOutputFile(audioSaveFile);
                             mediaRecorder.setOnErrorListener((mr, what, extra) ->
-                                Log.e(TAG, "MediaRecorder error: what=" + what + ", extra=" + extra)
+                                    Log.e(TAG, "MediaRecorder error: what=" + what + ", extra=" + extra)
                             );
 
                             try {

@@ -1,5 +1,7 @@
 package com.example.harmonic;
 
+import static android.media.AudioRecord.STATE_INITIALIZED;
+
 import android.annotation.SuppressLint;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -9,7 +11,7 @@ import android.widget.TextView;
 
 public class RecordingRunnable implements Runnable {
 
-    private static final int SAMPLE_RATE = 44100;
+    private static final int SAMPLE_RATE = 48000;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_8BIT;
     private static final int BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT);
@@ -37,7 +39,7 @@ public class RecordingRunnable implements Runnable {
             int previous = 0;
             //Since audio format is 8 bit, we need to create a 8 bit (byte data type) buffer
             byte[] buffer = new byte[BUFFER_SIZE * 100];
-            recording=true;
+            recording = true;
             while (recording && !Thread.interrupted()) {
                 //reading audio from buffer
                 int readSize = microphone.read(buffer, 0, buffer.length);
@@ -45,12 +47,11 @@ public class RecordingRunnable implements Runnable {
                 sum += sendToServer(readSize, buffer);
                 if (sum != previous) {
                     previous = sum;
-                    if(sum<1000){
+                    if (sum < 1000) {
                         String messageToScreen = "Number of occurrences: " + sum;
                         Log.v(TAG, messageToScreen);
                         occurrences.setText(messageToScreen);
-                    }
-                    else{
+                    } else {
                         String messageToScreen = "Number of occurrences: +999";
                         occurrences.setText(messageToScreen);
                     }
@@ -61,8 +62,10 @@ public class RecordingRunnable implements Runnable {
         } catch (Exception e) {
             Log.e(TAG, "error recording", e);  // Log the error for debugging
         } finally {
-            microphone.stop();
-            microphone.release();
+            if (microphone.getState() == STATE_INITIALIZED) {
+                microphone.stop();
+                microphone.release();
+            }
         }
     }
 
