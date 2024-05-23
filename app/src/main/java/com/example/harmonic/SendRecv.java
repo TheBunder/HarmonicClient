@@ -26,11 +26,11 @@ public class SendRecv {
     private static Handler MHandler;
     private static SecretKeySpec Aes_key;
     private static IvParameterSpec ivParams;
-    private static boolean IsEncrypted = false;
+    private static boolean encripted = false;
     private static final SecureRandom random = new SecureRandom();
 
     public static boolean GetIsEncrypted() {
-        return IsEncrypted;
+        return encripted;
     }
 
 
@@ -101,10 +101,10 @@ public class SendRecv {
 
     public static void setEncryption(Handler mHandler) {
 
-        if (!IsEncrypted) {
+        if (!encripted) {
 
             try {
-                byte[] arr = "Please talk with my secretly".getBytes();
+                byte[] arr = "Please talk with me secretly".getBytes();
                 SendRecv.send(mHandler, MainActivity.getIp(), arr);
 
                 String DPH_srv_key = SendRecv.receiveData();
@@ -146,7 +146,7 @@ public class SendRecv {
                 SendRecv.setAes_key(aesKey);
                 SendRecv.setIv(ivParams);
 
-                IsEncrypted = true;
+                encripted = true;
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
