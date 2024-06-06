@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -84,7 +83,7 @@ public class ShortRecord extends AppCompatActivity {
                         if (checkPermissions()) {// check if there are needed premision
                             recording = true;
                             Log.v(TAG, "Have permission");
-                            changeButtonState();
+                            switchOnRecorder();
                             soundSelector.setSelection(0);
                             File internalStorageDir = getFilesDir(); // Get internal storage directory
                             audioSaveFile = new File(internalStorageDir, "recordingAudio.ogg");
@@ -109,7 +108,7 @@ public class ShortRecord extends AppCompatActivity {
                             } catch (IOException e) {
                                 Toast.makeText(this, "Recording failed", Toast.LENGTH_SHORT).show();
                                 Log.e(TAG, "error recording", e);  // Log the error for debugging
-                                changeButtonState();
+                                switchOffRecorder();
                             }
 
                         } else {// ask for premision
@@ -121,7 +120,7 @@ public class ShortRecord extends AppCompatActivity {
 
                     } else {
                         recording = false;
-                        changeButtonState();
+                        switchOffRecorder();
                         mediaRecorder.stop();
                         mediaRecorder.reset();
                         mediaRecorder.release();
@@ -144,7 +143,7 @@ public class ShortRecord extends AppCompatActivity {
                     if (audioSaveFile != null) {// check if the user recorded something
                         mediaPlayer = new MediaPlayer();
                         try {
-                            btnPlay.setSelected(!btnPlay.isSelected());
+                            switchOnPlayer();
                             playing = true;
                             mediaPlayer.setDataSource(audioSaveFile.getAbsolutePath());
                             mediaPlayer.prepare();
@@ -156,7 +155,7 @@ public class ShortRecord extends AppCompatActivity {
                                 // Reset and release the media player after playback finishes
                                 mediaPlayer.reset();
                                 mediaPlayer.release();
-                                btnPlay.setSelected(!btnPlay.isSelected());
+                                switchOffPlayer();
                                 playing = false;
                                 mediaPlayer = null;
                                 Toast.makeText(ShortRecord.this, "Sound stopped playing", Toast.LENGTH_SHORT).show();
@@ -173,7 +172,7 @@ public class ShortRecord extends AppCompatActivity {
                 } else {
                     mediaPlayer.reset();
                     mediaPlayer.release();
-                    btnPlay.setSelected(!btnPlay.isSelected());
+                    switchOffPlayer();
                     playing = false;
                     mediaPlayer = null;
                     Toast.makeText(ShortRecord.this, "Sound stopped playing", Toast.LENGTH_SHORT).show();
@@ -219,9 +218,21 @@ public class ShortRecord extends AppCompatActivity {
 
     }
 
-    public void changeButtonState() {
-        btnRecord.setSelected(!btnRecord.isSelected());
-    }
+    public void switchOnRecorder() {
+        btnRecord.setSelected(true);
+    } // change button mode
+
+    public void switchOffRecorder() {
+        btnRecord.setSelected(false);
+    } // change button mode
+
+    public void switchOnPlayer() {
+        btnPlay.setSelected(true);
+    } // change button mode
+
+    public void switchOffPlayer() {
+        btnPlay.setSelected(false);
+    } // change button mode
 
     private static void sendToServerSound(String code, long current, long fileLength, byte[] contents) {// send to server the sound
         byte[] msg = (code + "~" + MainActivity.getUsername() + "~" + (current == fileLength ? 1 : 0) + "~").getBytes();
