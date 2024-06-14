@@ -1,7 +1,5 @@
 package com.example.harmonic;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,11 +9,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText username, password;
     Button btnLogin, btnSignup;
-    DBHelper DB;
     static String user;
     private static Handler mHandler;
 
@@ -45,9 +44,6 @@ public class MainActivity extends AppCompatActivity {
         // handler configuration
         mHandler = new Handler(Looper.getMainLooper()) {
         };
-
-        // DB configuration
-        DB = new DBHelper(this);
 
         // Text configuration
         username = findViewById(R.id.username);

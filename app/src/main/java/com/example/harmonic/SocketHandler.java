@@ -22,6 +22,5 @@ public class SocketHandler {
 
     public static synchronized void setHreceiver(Handler Hreceiver) {
         SocketHandler.Hreceiver = Hreceiver;
-
     }
 }

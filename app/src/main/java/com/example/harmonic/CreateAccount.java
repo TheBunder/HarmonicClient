@@ -77,7 +77,7 @@ public class CreateAccount extends AppCompatActivity {
                                     Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
                                 }
                             } else {
-                                Toast.makeText(this, "User already exists! Please sign in", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Username is already taken", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Toast.makeText(this, "Password must be at least " + MINIMUM_PASSWORD_LENGTH + " characters long", Toast.LENGTH_SHORT).show();

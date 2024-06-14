@@ -52,14 +52,15 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Number of occurrences: 0"
-        android:textColor="@color/HeaderColor"
+        android:textColor="@color/TextColor"
+        android:background="#805253A7"
         android:textSize="40sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.109"
         android:layout_below="@+id/buttonRecord"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="35dp" />
 
 
 

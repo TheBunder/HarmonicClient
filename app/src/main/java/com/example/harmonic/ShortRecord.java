@@ -1,11 +1,7 @@
 package com.example.harmonic;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -20,12 +16,16 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import android.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +44,6 @@ public class ShortRecord extends AppCompatActivity {
     MediaRecorder mediaRecorder;
     MediaPlayer mediaPlayer;
     File audioSaveFile;
-    boolean permission;
     boolean recording;
     boolean playing;
 
@@ -115,7 +114,6 @@ public class ShortRecord extends AppCompatActivity {
                             Log.v(TAG, "missing permission");
                             ActivityCompat.requestPermissions(ShortRecord.this,
                                     new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_MEDIA_AUDIO}, 1);
-                            permission = true;
                         }
 
                     } else {
@@ -164,7 +162,7 @@ public class ShortRecord extends AppCompatActivity {
                         } catch (IOException e) {
                             playing = false;
                             Toast.makeText(ShortRecord.this, "No sound captured", Toast.LENGTH_SHORT).show();
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     } else {
                         Toast.makeText(ShortRecord.this, "Please record something first", Toast.LENGTH_SHORT).show();
