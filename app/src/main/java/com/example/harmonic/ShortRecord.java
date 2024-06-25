@@ -204,6 +204,7 @@ public class ShortRecord extends AppCompatActivity {
                             fis.read(contents, 0, size);
 
                             sendToServerSound("ShortRecordSave", current, fileLength, contents);
+                            startActivity(new Intent(ShortRecord.this, LongRecord.class));
                         }
                     } catch (IOException e) {
                         Toast.makeText(this, "An error occurred when trying to send the sound", Toast.LENGTH_SHORT).show();
@@ -214,8 +215,8 @@ public class ShortRecord extends AppCompatActivity {
                 }
             } else {
                 sendToServerSelection((String) soundSelector.getSelectedItem());
+                startActivity(new Intent(ShortRecord.this, LongRecord.class));
             }
-            startActivity(new Intent(ShortRecord.this, LongRecord.class));
         });
         btnSave = findViewById(R.id.buttonSave);
 
