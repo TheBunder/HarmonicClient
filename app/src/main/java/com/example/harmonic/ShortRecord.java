@@ -47,6 +47,8 @@ public class ShortRecord extends AppCompatActivity {
     boolean recording;
     boolean playing;
 
+    boolean recorded = false;
+
     private static final String TAG = "ShortRecord";
 
     private List<String> savedRecordingNames; // List to store recording names
@@ -81,6 +83,7 @@ public class ShortRecord extends AppCompatActivity {
 
                         if (checkPermissions()) {// check if there are needed premision
                             recording = true;
+                            recorded = true;
                             Log.v(TAG, "Have permission");
                             switchOnRecorder();
                             soundSelector.setSelection(0);
@@ -184,26 +187,30 @@ public class ShortRecord extends AppCompatActivity {
         btnNext = findViewById(R.id.buttonRight);
         btnNext.setOnClickListener(v -> {// send the selection (by name or by file) and move to the next screen
             if (Objects.equals(soundSelector.getSelectedItem(), "default")) {
-                try (BufferedInputStream fis = new BufferedInputStream(Files.newInputStream(audioSaveFile.toPath()))) {
-                    long current = 0;
-                    long fileLength = audioSaveFile.length();
-                    byte[] contents;
-                    while (current != fileLength) {
-                        int size = 10000;
-                        if (fileLength - current >= size)
-                            current += size;
-                        else {
-                            size = (int) (fileLength - current);
-                            current = fileLength;
-                        }
-                        contents = new byte[size];
-                        fis.read(contents, 0, size);
+                if (recorded) {
+                    try (BufferedInputStream fis = new BufferedInputStream(Files.newInputStream(audioSaveFile.toPath()))) {
+                        long current = 0;
+                        long fileLength = audioSaveFile.length();
+                        byte[] contents;
+                        while (current != fileLength) {
+                            int size = 10000;
+                            if (fileLength - current >= size)
+                                current += size;
+                            else {
+                                size = (int) (fileLength - current);
+                                current = fileLength;
+                            }
+                            contents = new byte[size];
+                            fis.read(contents, 0, size);
 
-                        sendToServerSound("ShortRecordSave", current, fileLength, contents);
+                            sendToServerSound("ShortRecordSave", current, fileLength, contents);
+                        }
+                    } catch (IOException e) {
+                        Toast.makeText(this, "An error occurred when trying to send the sound", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error: ", e);
                     }
-                } catch (IOException e) {
-                    Toast.makeText(this, "an error occurred when trying to send the sound", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error: ", e);
+                } else {
+                    Toast.makeText(this, "Please Record or choose a sound first", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 sendToServerSelection((String) soundSelector.getSelectedItem());

@@ -3,15 +3,11 @@ package com.example.harmonic;
 import static android.media.AudioRecord.STATE_INITIALIZED;
 
 import android.annotation.SuppressLint;
-import android.content.ContextWrapper;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
-
-import java.io.File;
 
 public class RecordingRunnable implements Runnable {
 
@@ -99,20 +95,5 @@ public class RecordingRunnable implements Runnable {
         }
         return 0;
     }
-
-//    private String getRecordingFilePath()
-//    {
-//        Log.d(TAG, "Creating File for Audio");
-//        //I am using android 11
-//
-//        ContextWrapper contextWrapper= new ContextWrapper(getApplicationContext());
-//        File musicDirectory = contextWrapper.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-//        File file = new File(musicDirectory,"testAudioFile.pcm");
-//        String path = file.getPath();
-//        Log.d(TAG, "File created at path:" + path);
-//
-//        return path;
-//    }
-
 
 }
