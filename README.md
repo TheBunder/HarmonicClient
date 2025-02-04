@@ -50,4 +50,6 @@ Harmonic consists of the following key components:
 ## Relationship to Server
 
 The Android client-side application interacts with the server-side API by sending the raw audio data to the server for analysis. The server returns the count of the short sound segments, which the client then displays to the user. The server-side code is responsible for processing audio data using the FFT algorithm, providing user authentication using username and password.
+
+## App Screens
 ![App_screens](https://github.com/user-attachments/assets/23748e32-692f-4fde-94e1-130eab3e2f2a)
