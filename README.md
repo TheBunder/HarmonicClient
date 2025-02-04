@@ -37,8 +37,11 @@ Harmonic consists of the following key components:
 
 ## Technologies Used
 
-* Java (Specify the Java version if possible, e.g., Java 8, Java 11)
-* Android SDK (Specify the minimum SDK version, e.g., API 21, API 30)
+* Java
+* Android SDK
+* Retrofit 2.9.0 (for networking)
+* AudioTools 1.2.3 (for audio processing)
+* Bouncy Castle 1.70 (for AES and Diffie-Hellman encryption)
 
 ## Usage
 
